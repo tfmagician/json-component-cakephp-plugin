@@ -2,27 +2,27 @@
 /**
  * JsonComponent for CakePHP
  *
- * Used to centralize some JSON output. 
+ * Used to centralize some JSON output.
  *
  * @usage Create an elements/json.ctp for your output - expects a var $output which it will output as a json object
- * @settings: fakeAjax (false) Set to true to make cake think any incoming req is a ajax req. Useful to load the page in your browser. 
- *            debug (false) Set to true to allow app core debug setting to be user. 
+ * @settings: fakeAjax (false) Set to true to make cake think any incoming req is a ajax req. Useful to load the page in your browser.
+ *            debug (false) Set to true to allow app core debug setting to be user.
  *
- * To use, add this to your controller compnents: 
- * 
+ * To use, add this to your controller compnents:
+ *
  * var $components = array(
  *       'Json.Json' => array('debug'=>false, 'fakeAjax'=>false)
  *     );
  *
  *
- * If you are using jsonp, you will need to turn on 
+ * If you are using jsonp, you will need to turn on
  * Router::parseExtensions('json');
- * and make sure the url you hit ends in .json. This behaviour will change - just that cakephp doesn't detect jsonp req as ajax, so isAjax fails. 
+ * and make sure the url you hit ends in .json. This behaviour will change - just that cakephp doesn't detect jsonp req as ajax, so isAjax fails.
  *
  * @author Mitchell Amihod
  */
 class JsonComponent extends Object {
-    
+
     var $controller;
     var $components = array('RequestHandler');
 
@@ -46,9 +46,9 @@ class JsonComponent extends Object {
 
     /**
      * A flag used to disable at runtime for situations when you want to return HTML.
-     * You need to set enabled to FALSE in the controller::beforeFilter as once the 
+     * You need to set enabled to FALSE in the controller::beforeFilter as once the
      * controller::method has run, its too late (startup has already execd)
-     * 
+     *
      * @var bool
      */
     var $enabled = true;
@@ -63,12 +63,12 @@ class JsonComponent extends Object {
     function isJSONP() {
         return (array_key_exists('callback', $this->controller->params['url']));
     }
-    
-    
+
+
     /**
      * Figure out the filesystem path to the plugin. Please let me know if you know a better way to get this info.
      *
-     * Since we can't rely on this plugin name always being named Json 
+     * Since we can't rely on this plugin name always being named Json
      * (someone might want to check it out under a different name) we won't use App::pluginPath('Json')
      *
      * @return string
@@ -76,10 +76,10 @@ class JsonComponent extends Object {
     function pluginPath() {
         return realpath(dirname(__FILE__) . '/../..');
     }
-    
+
 
     public function initialize(&$controller, $settings=array()) {
-        
+
         $this->controller =& $controller;
         $this->_set($settings);
 
@@ -89,9 +89,9 @@ class JsonComponent extends Object {
             $_SERVER['HTTP_X_REQUESTED_WITH'] = "XMLHttpRequest";
         }
     }
-    
+
     public function startup(&$controller) {
-        if(!$this->enabled) { 
+        if(!$this->enabled) {
             return;
         }
 
@@ -113,9 +113,9 @@ class JsonComponent extends Object {
             $this->RequestHandler->respondAs('javascript');
         }
     }
-    
+
     public function shutdown(&$controller) {
-        if(!$this->enabled) { 
+        if(!$this->enabled) {
             return;
         }
 
@@ -123,12 +123,17 @@ class JsonComponent extends Object {
         if($this->RequestHandler->isAjax()) {
             //The path to render needs to be relative to the views folder the controller->render is looking in.
             $toRender = str_replace(APP, '../../', $this->pluginPath()).'/views/elements/json';
-        
+
             if(file_exists(ELEMENTS.'json.ctp')) {
                 $toRender = '../elements/json';
             }
 
             $controller->output = $controller->render($toRender);
         }
+    }
+
+    public function disable(&$controller) {
+        $controller->autoRender = true;
+        $this->enabled = false;
     }
 }
