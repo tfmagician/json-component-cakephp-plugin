@@ -78,10 +78,14 @@ class JsonComponent extends Object {
     }
 
 
-    public function initialize(&$controller, $settings=array()) {
+    public function initialize(&$C, $settings=array()) {
 
-        $this->controller =& $controller;
+        $this->controller =& $C;
         $this->_set($settings);
+
+        if (!empty($C->jsonDisabled) && in_array($C->params['action'], $C->jsonDisabled)) {
+            $this->enabled = false;
+        }
 
         if( $this->fakeAjax || $this->isJSONP() ) {
             //Trick ReqHandler to think its an ajax request
